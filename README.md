@@ -2,7 +2,7 @@
 
 
 
-                                            This is MERN To-Do App
+                                            This is MERN To-Do App.
 
 
 
