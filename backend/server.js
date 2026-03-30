@@ -15,7 +15,7 @@ app.use("/api/todos", todoRoutes);
 
 // Test Route 
 app.get("/", (req,res) => {
-    res.send("API is running");
+    res.send("API working");
 });
 
 app.listen(5000, () => {
