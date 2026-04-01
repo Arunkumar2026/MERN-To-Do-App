@@ -40,7 +40,7 @@ function App() {
             <button className='btn btn-primary' onClick={handleAdd}>Add</button>
         </div>
 
-        {/* <div className='space-y-2'>
+        <div className='space-y-2'>
           {todos.map((todo) => (
             <div key={todo.id} className='flex justify-between items-center bg-base-200 p-3 my-2 rounded-lg'>
               <span>{todo.title}</span>
@@ -49,13 +49,7 @@ function App() {
                 onClick={() => setTodos(todos.filter((t) => t.id !== todo.id))}>Delete</button>
             </div>
           ))}
-        </div> */}
-
-        <div className='space-y-4'>
-          <div>
-            <h2></h2>
-          </div>
-        </div>
+        </div> 
       </div>
      <Toaster/>
     </div>
