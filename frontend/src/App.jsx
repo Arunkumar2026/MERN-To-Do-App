@@ -1,14 +1,18 @@
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { Toaster, toast } from 'react-hot-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function App() {
   const [title,setTitle] = useState("");
   const [todos, setTodos] = useState([]);
 
+  const [editId, setEditId] = useState(null);
+  const [editText, setEditText] = useState("");
+
   const handleAdd = () => {
     if (!title.trim()){
-      return toast.error("Enter a task");
+      return alert("Task cannot be empty!");
     }
 
     const newTodo = {
@@ -21,6 +25,49 @@ function App() {
     setTitle("");
     toast.success("Task added!");
   }
+
+  const handleDelete = (id) => {
+    setTodos(todos.filter((t) => t.id !== id));
+    toast.success("Task Deleted");
+  }
+
+  const handleEdit = (todo) => {
+    setEditId(todo.id);
+    setEditText(todo.title);
+  }
+
+  const handleSave = (id) => {
+    if (!editText.trim()) {
+      return alert("Task cannot be empty");
+    }
+
+    setTodos(
+      todos.map((t) => 
+        t.id === id ? {...t, title: editText.trim() } : t 
+      )
+    );
+
+    setEditId(null);
+    setEditText("");
+    toast.success("Task Updated");
+  };
+
+  const handlCancel = () => {
+    setEditId(null);
+    setEditId("");
+  };
+
+  useEffect(() => {
+    const savedTodos = localStorage.getItem("todos");
+
+    if (savedTodos) {
+      setTodos(JSON.parse(savedTodos));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("todos", JSON.stringify(todos));
+  }, [todos]);
   
 
   return (
@@ -42,11 +89,27 @@ function App() {
 
         <div className='space-y-2'>
           {todos.map((todo) => (
-            <div key={todo.id} className='flex justify-between items-center bg-base-200 p-3 my-2 rounded-lg'>
-              <span>{todo.title}</span>
+            <div key={todo.id} className='flex justify-between items-start bg-base-200 p-3 my-2 rounded-lg'>
 
-              <button className='btn btn-sm btn-error'
-                onClick={() => setTodos(todos.filter((t) => t.id !== todo.id))}>Delete</button>
+              {editId === todo.id ? (
+                <input type="text" className='input input-bordered w-full' value={editText} onChange={(e) => setEditText(e.target.value)} />
+              ) : (<span className='flex-1 break-words'>{todo.title}</span>)}
+
+              <div className='flex flex-row sm:flex-col gap-2 ml-2 shrink-0'>
+                {editId === todo.id ? (
+                  <>
+                  <button className='btn btn-sm btn-success' onClick={() => handleSave(todo.id)}>Save</button>
+                  <button className='btn btn-sm' onClick={handlCancel}>Cancel</button>
+                  </>
+                ) : (
+                  <button className='btn btn-sm btn-warning mr-1' onClick={() => handleEdit(todo)}>
+                    
+                    <FontAwesomeIcon icon={faEdit}/> Edit
+                    </button>
+                )}
+              <button className='btn btn-sm btn-error'onClick={() => handleDelete(todo.id)}>
+                <FontAwesomeIcon icon={faTrash} /> Delete</button>
+              </div>
             </div>
           ))}
         </div> 
