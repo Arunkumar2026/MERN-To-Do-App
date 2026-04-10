@@ -10,9 +10,11 @@ function App() {
   const [editId, setEditId] = useState(null);
   const [editText, setEditText] = useState("");
 
+  const [isLoaded, setIsLoaded] = useState(false);
+
   const handleAdd = () => {
     if (!title.trim()){
-      return alert("Task cannot be empty!");
+      return toast.error("Task cannot be empty!");
     }
 
     const newTodo = {
@@ -38,7 +40,7 @@ function App() {
 
   const handleSave = (id) => {
     if (!editText.trim()) {
-      return alert("Task cannot be empty");
+      return toast.error("Task cannot be empty");
     }
 
     setTodos(
@@ -52,22 +54,32 @@ function App() {
     toast.success("Task Updated");
   };
 
-  const handlCancel = () => {
+  const handleCancel = () => {
     setEditId(null);
-    setEditId("");
+    setEditText("");
   };
 
   useEffect(() => {
     const savedTodos = localStorage.getItem("todos");
 
     if (savedTodos) {
-      setTodos(JSON.parse(savedTodos));
+      try {
+        setTodos(JSON.parse(savedTodos));
+        
+      } catch (error) {
+        console.error("Invalid JSON in localstorage", error);
+        localStorage.removeItem("todos");
+      }
     }
+
+    setIsLoaded(true);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("todos", JSON.stringify(todos));
-  }, [todos]);
+    if(isLoaded){
+      localStorage.setItem("todos", JSON.stringify(todos));
+    }
+  }, [todos, isLoaded]);
   
 
   return (
@@ -87,6 +99,10 @@ function App() {
             <button className='btn btn-primary' onClick={handleAdd}>Add</button>
         </div>
 
+        {todos.length === 0 && (
+          <p className='text-center text-gray-500 p-4 mt-4 font-semibold text-lg'>No tasks yet</p>
+        )}
+
         <div className='space-y-2'>
           {todos.map((todo) => (
             <div key={todo.id} className='flex justify-between items-start bg-base-200 p-3 my-2 rounded-lg'>
@@ -99,7 +115,7 @@ function App() {
                 {editId === todo.id ? (
                   <>
                   <button className='btn btn-sm btn-success' onClick={() => handleSave(todo.id)}>Save</button>
-                  <button className='btn btn-sm' onClick={handlCancel}>Cancel</button>
+                  <button className='btn btn-sm' onClick={handleCancel}>Cancel</button>
                   </>
                 ) : (
                   <button className='btn btn-sm btn-warning mr-1' onClick={() => handleEdit(todo)}>
