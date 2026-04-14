@@ -10,31 +10,53 @@ function App() {
   const [editId, setEditId] = useState(null);
   const [editText, setEditText] = useState("");
 
-  const [isLoaded, setIsLoaded] = useState(false);
 
   const handleAdd = () => {
     if (!title.trim()){
       return toast.error("Task cannot be empty!");
     }
 
-    const newTodo = {
-      id: Date.now(),
-      title,
-      completed: false,
-    };
+    // const newTodo = {
+    //   id: Date.now(),
+    //   title,
+    //   completed: false,
+    // };
 
-    setTodos([newTodo, ...todos]);
-    setTitle("");
-    toast.success("Task added!");
-  }
+    // setTodos([newTodo, ...todos]);
+    // setTitle("");
+    // toast.success("Task added!");
+
+    fetch("http://localhost:5000/api/todos", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title }),
+    })
+    .then(res => res.json())
+    .then(newTodo => {
+      setTodos([newTodo, ...todos]);
+      setTitle("");
+      toast.success("Task added!");
+    })
+    .catch(() => toast.error("Error adding task"));
+  };
 
   const handleDelete = (id) => {
-    setTodos(todos.filter((t) => t.id !== id));
-    toast.success("Task Deleted");
+    // setTodos(todos.filter((t) => t.id !== id));
+    // toast.success("Task Deleted");
+    fetch(`http://localhost:5000/api/todos/${id}`, {
+      method: "DELETE",
+    })
+    .then(() => {
+      setTodos(todos.filter(t => t._id !== id));
+      toast.success("Task Deleted");
+    })
+    .catch(() => toast.error("Error deleting"));
   }
 
   const handleEdit = (todo) => {
-    setEditId(todo.id);
+    setEditId(todo._id);
     setEditText(todo.title);
   }
 
@@ -43,15 +65,33 @@ function App() {
       return toast.error("Task cannot be empty");
     }
 
-    setTodos(
-      todos.map((t) => 
-        t.id === id ? {...t, title: editText.trim() } : t 
-      )
-    );
+    // setTodos(
+    //   todos.map((t) => 
+    //     t.id === id ? {...t, title: editText.trim() } : t 
+    //   )
+    // );
 
-    setEditId(null);
-    setEditText("");
-    toast.success("Task Updated");
+    // setEditId(null);
+    // setEditText("");
+    // toast.success("Task Updated");
+
+    fetch(`http://localhost:5000/api/todos/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title: editText }),
+    })
+    .then(() => {
+      setTodos(
+        todos.map(t => t._id === id ? { ...t, title: editText.trim() } : t)
+      );
+
+      setEditId(null);
+      setEditText("");
+      toast.success("Task updated");
+    })
+    .catch(() => toast.error("Error updating"));
   };
 
   const handleCancel = () => {
@@ -59,27 +99,35 @@ function App() {
     setEditText("");
   };
 
-  useEffect(() => {
-    const savedTodos = localStorage.getItem("todos");
+  // useEffect(() => {
+  //   const savedTodos = localStorage.getItem("todos");
+  //   console.log(savedTodos);
 
-    if (savedTodos) {
-      try {
-        setTodos(JSON.parse(savedTodos));
+  //   if (savedTodos) {
+  //     try {
+  //       setTodos(JSON.parse(savedTodos));
         
-      } catch (error) {
-        console.error("Invalid JSON in localstorage", error);
-        localStorage.removeItem("todos");
-      }
-    }
+  //     } catch (error) {
+  //       console.error("Invalid JSON in localstorage", error);
+  //       localStorage.removeItem("todos");
+  //     }
+  //   }
 
-    setIsLoaded(true);
-  }, []);
+  //   setIsLoaded(true);
+  // }, []);
+
+  // useEffect(() => {
+  //   if(isLoaded){
+  //     localStorage.setItem("todos", JSON.stringify(todos));
+  //   }
+  // }, [todos, isLoaded]);
 
   useEffect(() => {
-    if(isLoaded){
-      localStorage.setItem("todos", JSON.stringify(todos));
-    }
-  }, [todos, isLoaded]);
+    fetch("http://localhost:5000/api/todos")
+      .then(res => res.json())
+      .then(data => setTodos(data))
+      .catch(() => toast.error("Failed to fetch todos"));
+  }, []);
   
 
   return (
@@ -105,16 +153,16 @@ function App() {
 
         <div className='space-y-2'>
           {todos.map((todo) => (
-            <div key={todo.id} className='flex justify-between items-start bg-base-200 p-3 my-2 rounded-lg'>
+            <div key={todo._id} className='flex justify-between items-start bg-base-200 p-3 my-2 rounded-lg'>
 
-              {editId === todo.id ? (
+              {editId === todo._id ? (
                 <input type="text" className='input input-bordered w-full' value={editText} onChange={(e) => setEditText(e.target.value)} />
               ) : (<span className='flex-1 break-words'>{todo.title}</span>)}
 
               <div className='flex flex-row sm:flex-col gap-2 ml-2 shrink-0'>
-                {editId === todo.id ? (
+                {editId === todo._id ? (
                   <>
-                  <button className='btn btn-sm btn-success' onClick={() => handleSave(todo.id)}>Save</button>
+                  <button className='btn btn-sm btn-success' onClick={() => handleSave(todo._id)}>Save</button>
                   <button className='btn btn-sm' onClick={handleCancel}>Cancel</button>
                   </>
                 ) : (
@@ -123,7 +171,7 @@ function App() {
                     <FontAwesomeIcon icon={faEdit}/> Edit
                     </button>
                 )}
-              <button className='btn btn-sm btn-error'onClick={() => handleDelete(todo.id)}>
+              <button className='btn btn-sm btn-error'onClick={() => handleDelete(todo._id)}>
                 <FontAwesomeIcon icon={faTrash} /> Delete</button>
               </div>
             </div>
