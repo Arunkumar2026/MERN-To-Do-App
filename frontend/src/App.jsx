@@ -16,17 +16,7 @@ function App() {
       return toast.error("Task cannot be empty!");
     }
 
-    // const newTodo = {
-    //   id: Date.now(),
-    //   title,
-    //   completed: false,
-    // };
-
-    // setTodos([newTodo, ...todos]);
-    // setTitle("");
-    // toast.success("Task added!");
-
-    fetch("http://localhost:5000/api/todos", {
+    fetch("https://to-do-backend-pxvm.onrender.com/api/todos", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -43,9 +33,7 @@ function App() {
   };
 
   const handleDelete = (id) => {
-    // setTodos(todos.filter((t) => t.id !== id));
-    // toast.success("Task Deleted");
-    fetch(`http://localhost:5000/api/todos/${id}`, {
+    fetch(`https://to-do-backend-pxvm.onrender.com/api/todos/${id}`, {
       method: "DELETE",
     })
     .then(() => {
@@ -65,17 +53,7 @@ function App() {
       return toast.error("Task cannot be empty");
     }
 
-    // setTodos(
-    //   todos.map((t) => 
-    //     t.id === id ? {...t, title: editText.trim() } : t 
-    //   )
-    // );
-
-    // setEditId(null);
-    // setEditText("");
-    // toast.success("Task Updated");
-
-    fetch(`http://localhost:5000/api/todos/${id}`, {
+    fetch(`https://to-do-backend-pxvm.onrender.com/api/todos/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -99,31 +77,8 @@ function App() {
     setEditText("");
   };
 
-  // useEffect(() => {
-  //   const savedTodos = localStorage.getItem("todos");
-  //   console.log(savedTodos);
-
-  //   if (savedTodos) {
-  //     try {
-  //       setTodos(JSON.parse(savedTodos));
-        
-  //     } catch (error) {
-  //       console.error("Invalid JSON in localstorage", error);
-  //       localStorage.removeItem("todos");
-  //     }
-  //   }
-
-  //   setIsLoaded(true);
-  // }, []);
-
-  // useEffect(() => {
-  //   if(isLoaded){
-  //     localStorage.setItem("todos", JSON.stringify(todos));
-  //   }
-  // }, [todos, isLoaded]);
-
   useEffect(() => {
-    fetch("http://localhost:5000/api/todos")
+    fetch("https://to-do-backend-pxvm.onrender.com/api/todos")
       .then(res => res.json())
       .then(data => setTodos(data))
       .catch(() => toast.error("Failed to fetch todos"));
