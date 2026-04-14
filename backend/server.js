@@ -6,6 +6,7 @@ import cors from "cors";
 
 dotenv.config();
 
+const PORT = process.env.PORT || 5000;
 
 const app = express();
 
@@ -21,7 +22,7 @@ app.get("/", (req,res) => {
     res.send("API working...");
 });
 
-app.listen(5000, () => {
+app.listen(PORT, () => {
     connectDB();
     console.log("server started at http://localhost:5000")
 });
