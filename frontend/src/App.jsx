@@ -4,6 +4,8 @@ import { Toaster, toast } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 
 function App() {
+  const [loading, setLoading] = useState(true);
+
   const [title,setTitle] = useState("");
   const [todos, setTodos] = useState([]);
 
@@ -78,10 +80,18 @@ function App() {
   };
 
   useEffect(() => {
+    setLoading(true);
+
     fetch("https://to-do-backend-pxvm.onrender.com/api/todos")
       .then(res => res.json())
-      .then(data => setTodos(data))
-      .catch(() => toast.error("Failed to fetch todos"));
+      .then(data => {
+        setTodos(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        toast.error("Failed to fetch todos");
+        setLoading(false);
+      });
   }, []);
   
 
@@ -99,12 +109,14 @@ function App() {
             value={title}
             onChange={(e) => setTitle(e.target.value)} />
 
-            <button className='btn btn-primary' onClick={handleAdd}>Add</button>
+            <button className='btn btn-primary' onClick={handleAdd} disabled={loading}>Add</button>
         </div>
 
-        {todos.length === 0 && (
+        {loading ? (
+          <p className='text-center mt-4 font-semibold'>Loading...</p>
+        ) : todos.length === 0 ? (
           <p className='text-center text-gray-500 p-4 mt-4 font-semibold text-lg'>No tasks yet</p>
-        )}
+        ) : null}
 
         <div className='space-y-2'>
           {todos.map((todo) => (
