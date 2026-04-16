@@ -9,11 +9,11 @@ export const createTodo = async (req, res) => {
             return res.status(400).json({message: "Title is required" });
         }
 
-        const newTodo = new Todo({
+        const newTodo = await Todo.create({
             title,
+            user: req.user._id
         });
-        const savedTodo = await newTodo.save();
-        res.status(201).json(savedTodo);
+        res.status(201).json(newTodo);
 
     } catch (error) {
         res.status(500).json({message: error.message});
@@ -22,8 +22,7 @@ export const createTodo = async (req, res) => {
 
 export const getTodos = async (req, res) => {
     try {
-        const todos = await Todo.find();
-
+        const todos = await Todo.find({ user: req.user._id });
         res.status(200).json(todos);
     } catch (error) {
         res.status(500).json({message: error.message });
@@ -34,8 +33,8 @@ export const updateTodo = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const updateTodo = await Todo.findByIdAndUpdate(
-            id,
+        const updateTodo = await Todo.findOneAndUpdate(
+            { _id:id, user: req.user._id },
             req.body,
             { new: true}
 
@@ -45,7 +44,7 @@ export const updateTodo = async (req, res) => {
             return res.status(404).json({message: "Todo not found" });
         }
 
-        res.status(200).json({updateTodo});
+        res.status(200).json(updateTodo);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -55,10 +54,13 @@ export const deleteTodo = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const deleteTodo = await Todo.findByIdAndDelete(id);
+        const deleteTodo = await Todo.findOneAndDelete({
+            _id: id,
+            user:req.user._id,
+        });
 
         if(!deleteTodo){
-            res.status(404).json({message: "Todo not found" });
+            return res.status(404).json({message: "Todo not found" });
         }
 
         res.status(200).json({message: "Todo deleted successfully" });
