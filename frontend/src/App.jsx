@@ -2,15 +2,47 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { Toaster, toast } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
+import Login from './Login';
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    !!localStorage.getItem("token")
+  );
+
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const [title,setTitle] = useState("");
   const [todos, setTodos] = useState([]);
 
   const [editId, setEditId] = useState(null);
   const [editText, setEditText] = useState("");
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+
+    fetch("https://to-do-backend-pxvm.onrender.com/api/todos", {
+      headers: {
+        Authorization: token,
+      },
+    })
+    .then(res => res.json())
+    .then(data => {
+      setTodos(data);
+      setLoading(false);
+    })
+    .catch(() => {
+      toast.error("Failed to fetch todos");
+      setLoading(false);
+    })
+  }, []);
 
 
   const handleAdd = () => {
@@ -22,6 +54,7 @@ function App() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: localStorage.getItem("token"),
       },
       body: JSON.stringify({ title }),
     })
@@ -37,6 +70,9 @@ function App() {
   const handleDelete = (id) => {
     fetch(`https://to-do-backend-pxvm.onrender.com/api/todos/${id}`, {
       method: "DELETE",
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      }
     })
     .then(() => {
       setTodos(todos.filter(t => t._id !== id));
@@ -59,6 +95,7 @@ function App() {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Authorization: localStorage.getItem("token"),
       },
       body: JSON.stringify({ title: editText }),
     })
@@ -78,26 +115,22 @@ function App() {
     setEditId(null);
     setEditText("");
   };
-
-  useEffect(() => {
-    setLoading(true);
-
-    fetch("https://to-do-backend-pxvm.onrender.com/api/todos")
-      .then(res => res.json())
-      .then(data => {
-        setTodos(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        toast.error("Failed to fetch todos");
-        setLoading(false);
-      });
-  }, []);
   
+  if(!isAuthenticated){
+    return <Login setIsAuthenticated={setIsAuthenticated} /> 
+  }
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-blue-200 to-purple-300 flex items-center justify-center'>
       <div className='w-full max-w-md bg-white rounded-2xl shadow-xl p-6'>
+
+        <button
+        className='btn btn-sm btn-error mb-4'
+        onClick={() => {
+          localStorage.removeItem("token");
+          setIsAuthenticated(false);
+        }}
+        >Logout</button>
         <h1 className='text-2xl font-bold text-center mb-6'>
           Todo App
         </h1>
