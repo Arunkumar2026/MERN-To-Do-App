@@ -33,13 +33,20 @@ function App() {
         Authorization: token,
       },
     })
-    .then(res => res.json())
+    .then(res => {
+      if(!res.ok){
+        throw new Error("Unauthorized");
+      }
+      return res.json();
+    })
     .then(data => {
-      setTodos(data);
+      setTodos(Array.isArray(data) ? data : []);
       setLoading(false);
     })
     .catch(() => {
-      toast.error("Failed to fetch todos");
+      toast.error("Session expored. Please login again.");
+      localStorage.removeItem("token");
+      setIsAuthenticated(false);
       setLoading(false);
     })
   }, []);
@@ -101,7 +108,8 @@ function App() {
     })
     .then(() => {
       setTodos(
-        todos.map(t => t._id === id ? { ...t, title: editText.trim() } : t)
+        // todos.map(t => t._id === id ? { ...t, title: editText.trim() } : t)
+        Array.isArray(todos) && todos.map(t => t._id === id ? { ...t, title: editText.trim() } : t)
       );
 
       setEditId(null);
