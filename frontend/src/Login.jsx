@@ -30,6 +30,7 @@ function Login({ setIsAuthenticated }) {
       );
 
       const data = await res.json();
+      console.log(data);
 
       if (!res.ok) {
         return toast.error(data.message || "Something went wrong");
